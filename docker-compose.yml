@@ -14,23 +14,23 @@ services:
     image: redis
 
   rq_worker:
-    build: ./
+    build: .
     command: python manage.py rqworker default
+    env_file:
+      - .env
     volumes:
       - .:/code
     depends_on:
       - redis
       - web
-    links:
-      - redis
 
   rq_scheduler:
-    build: ./
+    build: .
     command: python manage.py rqscheduler
+    env_file:
+      - .env
     volumes:
       - .:/code
-    links:
-      - redis
     depends_on:
       - redis
       - web
@@ -44,14 +44,12 @@ services:
 
   web:
     build: .
-    command: gunicorn djangodocker.wsgi:application --bind ${DJANGO_IP_ADDRESS}:${DJANGO_PORT}
+    command: gunicorn -c /code/djangodocker/gunicorn_config.py djangodocker.wsgi:application
     volumes:
       - .:/code
     expose:
       - ${DJANGO_PORT}
     depends_on:
       - db
-    links:
-      - redis
     env_file:
       - .env

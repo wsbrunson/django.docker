@@ -11,15 +11,9 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 import os
-import environ
 
 from pathlib import Path
 
-
-env = environ.Env(
-    DJANGO_DEBUG=(bool, False)
-)
-environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,12 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('DJANGO_SECRET_KEY')
+SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DJANGO_DEBUG')
+DEBUG = (os.environ['DJANGO_DEBUG'] == 'True')
 
-ALLOWED_HOSTS = ['0.0.0.0']
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
 
 # Application definition
@@ -89,10 +83,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
-        'USER': env( 'DATABASES_POSTGRES_USER' ),
-        'PASSWORD': env( 'DATABASES_POSTGRES_PASSWORD' ),
-        'HOST': env('DATABASES_POSTGRES_HOST'),
-        'PORT': env( 'DATABASES_POSTGRES_PORT' ),
+        'USER': os.environ['DATABASES_POSTGRES_USER'],
+        'PASSWORD': os.environ['DATABASES_POSTGRES_PASSWORD'],
+        'HOST': os.environ['DATABASES_POSTGRES_HOST'],
+        'PORT': os.environ['DATABASES_POSTGRES_PORT'],
     }
 }
 
