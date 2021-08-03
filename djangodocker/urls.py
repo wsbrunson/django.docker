@@ -17,8 +17,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
-    path('drivers/', include('drivers.urls')),
-    path('polls/', include('polls.urls')),
-    path('admin/', admin.site.urls),
-    path('django-rq/', include('django_rq.urls')),
+    path("drivers/", include("drivers.urls")),
+    path("polls/", include("polls.urls")),
+    path("admin/", admin.site.urls),
 ]
