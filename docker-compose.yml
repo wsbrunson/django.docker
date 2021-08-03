@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  redis:
+    image: redis
+
+  rq_worker:
+    build: ./
+    command: python manage.py rqworker default
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+      - web
+    links:
+      - redis
+
+  rq_scheduler:
+    build: ./
+    command: python manage.py rqscheduler
+    volumes:
+      - .:/code
+    links:
+      - redis
+    depends_on:
+      - redis
+      - web
+
+  web:
+    build: .
+    command: python manage.py runserver 0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    links:
+      - redis
