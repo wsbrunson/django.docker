@@ -11,8 +11,15 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 import os
+import environ
 
 from pathlib import Path
+
+
+env = environ.Env(
+    DJANGO_DEBUG=(bool, False)
+)
+environ.Env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,10 +29,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1kr(4x3p5cbe+yc0cz^sonm0xxdytqyzvd9u^poo$9k*uaz#@%'
+SECRET_KEY = env('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DJANGO_DEBUG')
 
 ALLOWED_HOSTS = ['0.0.0.0']
 
@@ -82,10 +89,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
+        'USER': env( 'DATABASES_POSTGRES_USER' ),
+        'PASSWORD': env( 'DATABASES_POSTGRES_PASSWORD' ),
         'HOST': 'db',
-        'PORT': 5432,
+        'PORT': env( 'DATABASES_POSTGRES_PORT' ),
     }
 }
 

@@ -7,8 +7,8 @@ services:
       - ./data/db:/var/lib/postgresql/data
     environment:
       - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=${DATABASES_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${DATABASES_POSTGRES_PASSWORD}
 
   redis:
     image: redis
@@ -46,3 +46,8 @@ services:
       - db
     links:
       - redis
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DATABASES_POSTGRES_USER=${DATABASES_POSTGRES_USER}
+      - DATABASES_POSTGRES_PASSWORD=${DATABASES_POSTGRES_PASSWORD}
+      - DATABASES_POSTGRES_PORT=${DATABASES_POSTGRES_PORT}
