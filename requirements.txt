@@ -6,3 +6,4 @@ django-rq>=2.4
 rq-scheduler>=0.11
 requests>=2.26
 django-environ>=0.4
+gunicorn>=20.1.0

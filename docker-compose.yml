@@ -35,19 +35,23 @@ services:
       - redis
       - web
 
+  nginx:
+    build: ./nginx
+    ports:
+      - 1300:80
+    depends_on:
+      - web
+
   web:
     build: .
-    command: python manage.py runserver 0:8000
+    command: gunicorn djangodocker.wsgi:application --bind ${DJANGO_IP_ADDRESS}:${DJANGO_PORT}
     volumes:
       - .:/code
-    ports:
-      - "8000:8000"
+    expose:
+      - ${DJANGO_PORT}
     depends_on:
       - db
     links:
       - redis
-    environment:
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
-      - DATABASES_POSTGRES_USER=${DATABASES_POSTGRES_USER}
-      - DATABASES_POSTGRES_PASSWORD=${DATABASES_POSTGRES_PASSWORD}
-      - DATABASES_POSTGRES_PORT=${DATABASES_POSTGRES_PORT}
+    env_file:
+      - .env

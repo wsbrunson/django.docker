@@ -1,15 +1,16 @@
 # syntax=docker/dockerfile:1
 FROM python:3
 
-WORKDIR /code
+WORKDIR /code 
 
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update
 RUN apt-get install -y postgresql postgresql-contrib
 
 RUN pip install --upgrade pip 
-COPY requirements.txt /code/
+COPY . /code/
 RUN pip install -r requirements.txt
 
-COPY . /code/
+CMD ["/bin/bash", '/code/entrypoint.sh']
