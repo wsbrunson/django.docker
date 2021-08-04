@@ -30,7 +30,7 @@ def convert_driver_xml_to_models(xml_string):
             "twitter_username": driver_id_to_twitter_profile[driver_id],
         }
 
-        Driver.objects.update_or_create(**driver_data)
+        Driver.objects.update_or_create(id=driver_id, defaults=driver_data)
 
 
 @shared_task
