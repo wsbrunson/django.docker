@@ -3,7 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 
 from .models import Driver
-from .tasks import populate_driver_data
+from .tasks import populate_driver_data, log_driver_twitter_metric
 
 
 def index(request):
@@ -18,6 +18,11 @@ def detail(request, driver_id):
 
 def populate_drivers(request):
     populate_driver_data.delay()
+    return HttpResponse("ok")
+
+
+def populate_driver_twitter_metrics(request):
+    log_driver_twitter_metric.delay()
     return HttpResponse("ok")
 
 
