@@ -21,10 +21,10 @@ def debug_task(self):
 app.conf.beat_schedule = {
     "populate_driver_data": {
         "task": "drivers.tasks.populate_driver_data",
-        "schedule": crontab("0 0 * * *"),
+        "schedule": crontab(minute=0, hour=0),
     },
     "populate_driver_metric_data": {
         "task": "drivers.tasks.log_driver_twitter_metric",
-        "schedule": crontab("*/60 * * * *"),
+        "schedule": crontab(minute="*/60"),
     },
 }
