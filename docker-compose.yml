@@ -30,6 +30,16 @@ services:
     depends_on:
       - redis
 
+  celery-beat:
+    build: .
+    command: celery -A djangodocker beat -l INFO
+    volumes:
+      - .:/code
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
   web:
     build: .
     command: gunicorn -c /code/djangodocker/gunicorn_config.py djangodocker.wsgi:application
