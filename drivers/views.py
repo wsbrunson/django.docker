@@ -1,9 +1,8 @@
 from django.core.serializers import serialize
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, get_list_or_404
 
-from .models import Driver
-from .tasks import populate_driver_data, log_driver_twitter_metric
+from .models import Driver, DriverTwitterMetrics
 
 
 def index(request):
@@ -16,16 +15,12 @@ def detail(request, driver_id):
     return JsonResponse(serialize("json", [driver]), safe=False)
 
 
-def populate_drivers(request):
-    populate_driver_data.delay()
-    return HttpResponse("ok")
+def all_driver_metrics(request):
+    drivers = DriverTwitterMetrics.objects.order_by("time", "followers_count")
+    return JsonResponse(serialize("json", drivers), safe=False)
 
 
-def populate_driver_twitter_metrics(request):
-    log_driver_twitter_metric.delay()
-    return HttpResponse("ok")
-
-
-def remove_all_drivers(request):
-    Driver.objects.all().delete()
-    return HttpResponse("ok")
+def driver_metrics(request, driver_id):
+    driver = get_list_or_404(DriverTwitterMetrics, driver_id=driver_id)
+    data = serialize("json", driver)
+    return JsonResponse({"data": data, "metadata": {"count": len(driver)}}, safe=False)
