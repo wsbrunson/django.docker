@@ -1,4 +1,7 @@
 __pycache__
+admin/
+rest_framework/
+django_docker/
 data
 .env
 celerybeat-schedule

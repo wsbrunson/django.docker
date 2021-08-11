@@ -17,7 +17,11 @@ from django.contrib import admin
 from django.urls import include, path
 
 urlpatterns = [
+    path("", include("pollmanager.urls")),
     path("api/drivers/", include("drivers.urls")),
     path("api/polls/", include("polls.urls")),
-    path("api/admin/", admin.site.urls),
+    path("admin/", admin.site.urls),
+    path("", include("social_django.urls")),
+    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
+    path("", include("schedules.urls")),
 ]

@@ -4,51 +4,69 @@ services:
   db:
     image: postgres
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data/
+    expose:
+      - 5432
+    networks:
+      - traefik-network
     environment:
-      - POSTGRES_DB=postgres
+      - POSTGRES_DB=${DATABASES_POSTGRES_DB}
       - POSTGRES_USER=${DATABASES_POSTGRES_USER}
       - POSTGRES_PASSWORD=${DATABASES_POSTGRES_PASSWORD}
 
   redis:
     image: redis
+    networks:
+      - traefik-network
 
-  nginx:
-    build: ./nginx
+    # celery:
+    #   build: .
+    #   command: celery -A djangodocker worker -l INFO
+    #   volumes:
+    #     - .:/code
+    #   env_file:
+    #     - .env
+    #   depends_on:
+    #     - redis
+
+    # celery-beat:
+    #   build: .
+    #   command: celery -A djangodocker beat -l INFO
+    #   volumes:
+    #     - .:/code
+    #   env_file:
+    #     - .env
+    #   depends_on:
+    #     - redis
+
+  traefik:
+    image: traefik:latest
     ports:
-      - ${NGINX_PORT}:80
-    depends_on:
-      - web
-
-  celery:
-    build: .
-    command: celery -A djangodocker worker -l INFO
+      - 80:80
+      - 8080:8080
+    networks:
+      - traefik-network
     volumes:
-      - .:/code
-    env_file:
-      - .env
-    depends_on:
-      - redis
+      - "./traefik.dev.toml:/etc/traefik/traefik.toml"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
-  celery-beat:
+  api:
     build: .
-    command: celery -A djangodocker beat -l INFO
+    command: uvicorn app.main:app --host 0.0.0.0
     volumes:
-      - .:/code
-    env_file:
-      - .env
-    depends_on:
-      - redis
-
-  web:
-    build: .
-    command: gunicorn -c /code/djangodocker/gunicorn_config.py djangodocker.wsgi:application
-    volumes:
-      - .:/code
-    expose:
-      - ${DJANGO_PORT}
+      - .:/app
+    networks:
+      - traefik-network
     depends_on:
       - db
-      - redis
     env_file:
       - .env
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.fastapi.rule=Host(`api.localhost`)
+      - traefik.http.services.service1.loadbalancer.server.port=8000
+
+volumes:
+  postgres_data:
+networks:
+  traefik-network:

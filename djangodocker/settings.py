@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 import os
-
+from cryptography.x509 import load_pem_x509_certificate
+from cryptography.hazmat.backends import default_backend
 from pathlib import Path
 
 
@@ -34,15 +35,23 @@ ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 # Application definition
 
 INSTALLED_APPS = [
-    "drivers.apps.DriversConfig",
-    "polls.apps.PollsConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "polls.apps.PollsConfig",
+    "drivers.apps.DriversConfig",
+    "accounts.apps.AccountsConfig",
+    "pollmanager.apps.PollmanagerConfig",
+    "schedules.apps.SchedulesConfig",
+    "social_django",
+    "rest_framework_auth0",
+    "rest_framework",
 ]
+
+AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -50,6 +59,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.auth.middleware.RemoteUserMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -127,6 +137,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = "/static/"
+STATIC_ROOT = "/static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -135,3 +146,56 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Celery Configuration Options
 CELERY_BROKER_URL = "redis://redis/0"
+
+# Auth0 settings
+SOCIAL_AUTH_TRAILING_SLASH = False
+SOCIAL_AUTH_AUTH0_DOMAIN = os.environ["AUTH0_DOMAIN"]
+SOCIAL_AUTH_AUTH0_KEY = os.environ["AUTH0_APP_CLIENT_ID"]
+SOCIAL_AUTH_AUTH0_SECRET = os.environ["AUTH0_APP_CLIENT_SECRET"]
+SOCIAL_AUTH_AUTH0_SCOPE = ["openid", "profile", "email"]
+
+AUTHENTICATION_BACKENDS = {
+    "social_core.backends.auth0.Auth0OAuth2",
+    "django.contrib.auth.backends.ModelBackend",
+    "django.contrib.auth.backends.RemoteUserBackend",
+}
+
+LOGIN_URL = "/login/auth0"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.BasicAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+        "rest_framework_auth0.authentication.Auth0JSONWebTokenAuthentication",
+    ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 1000,
+}
+
+# Read the your Auth0 client PEM certificate
+certificate_text = open("rsa_certificates/certificate.pem", "rb").read()
+certificate = load_pem_x509_certificate(certificate_text, default_backend())
+# Get your PEM certificate public_key
+certificate_publickey = certificate.public_key()
+#
+#
+# AUTH0 SETTINGS
+AUTH0 = {
+    "CLIENTS": {
+        "default": {
+            "AUTH0_CLIENT_ID": os.environ["AUTH0_API_CLIENT_ID"],
+            "AUTH0_AUDIENCE": os.environ["AUTH0_AUDIENCE"],
+            "AUTH0_ALGORITHM": "RS256",  # default used in Auth0 apps
+            "PUBLIC_KEY": certificate_publickey,
+        },
+    },
+    # Management API - For roles and permissions validation
+    "MANAGEMENT_API": {
+        "AUTH0_DOMAIN": os.environ["AUTH0_DOMAIN"],
+        "AUTH0_CLIENT_ID": os.environ["AUTH0_APP_CLIENT_ID"],
+        "AUTH0_CLIENT_SECRET": os.environ["AUTH0_APP_CLIENT_SECRET"],
+    },
+}
