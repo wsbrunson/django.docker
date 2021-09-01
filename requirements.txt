@@ -1,0 +1,8 @@
+asyncpg
+fastapi
+fastapi-auth0
+pytest
+pytest-dotenv
+psycopg2-binary
+sqlalchemy
+uvicorn[standard]

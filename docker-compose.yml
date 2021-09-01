@@ -51,8 +51,10 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   api:
+    container_name: api
     build: .
     command: uvicorn app.main:app --host 0.0.0.0
+    # command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--reload"]
     volumes:
       - .:/app
     networks:
